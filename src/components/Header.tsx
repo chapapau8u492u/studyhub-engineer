@@ -1,87 +1,83 @@
 
 import { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { UserCircle, Search, Bell, Menu, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Link } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Book, LogIn, User, Settings, LogOut } from 'lucide-react';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  
+  const { user, signOut } = useAuth();
+
   return (
-    <header className="bg-white shadow-sm">
-      <div className="container mx-auto py-4 px-4 flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-2xl font-bold text-primary">StudyHub</h1>
-          
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-6 ml-10">
-            <a href="/" className="text-gray-700 hover:text-primary transition-colors">Home</a>
-            <a href="#" className="text-gray-700 hover:text-primary transition-colors">My Notes</a>
-            <a href="#" className="text-gray-700 hover:text-primary transition-colors">Discussions</a>
-            <a href="#" className="text-gray-700 hover:text-primary transition-colors">About</a>
-          </nav>
-        </div>
-        
-        <div className="hidden md:flex items-center space-x-4">
-          <div className="relative w-64">
-            <Input 
-              type="text" 
-              placeholder="Search notes..." 
-              className="pl-9 pr-4" 
-            />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+    <header className="bg-white border-b">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex justify-between items-center">
+          <Link to="/" className="flex items-center gap-2">
+            <Book className="h-6 w-6 text-primary" />
+            <span className="font-bold text-xl text-primary">StudyHub</span>
+          </Link>
+
+          <div className="flex items-center gap-4">
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback>
+                        {user.email?.charAt(0).toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
+                      <User className="h-4 w-4" />
+                      <span>Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/" className="flex items-center gap-2 cursor-pointer">
+                      <Book className="h-4 w-4" />
+                      <span>My Notes</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
+                      <Settings className="h-4 w-4" />
+                      <span>Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut()} className="flex items-center gap-2 cursor-pointer">
+                    <LogOut className="h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link to="/auth">
+                <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                  <LogIn className="h-4 w-4" />
+                  <span>Log in</span>
+                </Button>
+              </Link>
+            )}
           </div>
-          
-          <Button variant="ghost" size="icon">
-            <Bell className="h-5 w-5" />
-          </Button>
-          
-          <Button variant="ghost" size="icon">
-            <UserCircle className="h-5 w-5" />
-          </Button>
         </div>
-        
-        {/* Mobile Menu Button */}
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="md:hidden"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-        >
-          {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </Button>
       </div>
-      
-      {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden bg-white border-t p-4 animate-fade-in">
-          <nav className="flex flex-col space-y-4">
-            <a href="/" className="text-gray-700 hover:text-primary transition-colors">Home</a>
-            <a href="#" className="text-gray-700 hover:text-primary transition-colors">My Notes</a>
-            <a href="#" className="text-gray-700 hover:text-primary transition-colors">Discussions</a>
-            <a href="#" className="text-gray-700 hover:text-primary transition-colors">About</a>
-          </nav>
-          
-          <div className="mt-4 relative">
-            <Input 
-              type="text" 
-              placeholder="Search notes..." 
-              className="pl-9 pr-4 w-full" 
-            />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          </div>
-          
-          <div className="flex mt-4 space-x-4">
-            <Button variant="ghost" size="icon">
-              <Bell className="h-5 w-5" />
-            </Button>
-            
-            <Button variant="ghost" size="icon">
-              <UserCircle className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-      )}
     </header>
   );
 };

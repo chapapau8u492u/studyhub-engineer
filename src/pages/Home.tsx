@@ -1,140 +1,18 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { Subject, Note, Branch, Year } from '@/types/supabase';
+import { subjectsService, notesService } from '@/services/supabase';
 import Header from '@/components/Header';
-import BranchSelector, { Branch, Year } from '@/components/BranchSelector';
-import SubjectList, { Subject } from '@/components/SubjectList';
+import BranchSelector from '@/components/BranchSelector';
+import SubjectList from '@/components/SubjectList';
 import SearchAndFilter from '@/components/SearchAndFilter';
-import NoteCard, { Note } from '@/components/NoteCard';
-
-// Sample notes data
-const sampleNotes: Note[] = [
-  {
-    id: '1',
-    title: 'Data Structures Complete Notes',
-    description: 'Comprehensive notes covering all topics from arrays to advanced trees and graphs. Includes examples and practice problems.',
-    uploadDate: '2023-05-15',
-    uploaderName: 'Dr. Sharma',
-    rating: 4.8,
-    downloads: 1250,
-    likes: 342,
-    comments: 48,
-    fileType: 'PDF',
-    fileSize: '4.2 MB',
-    subject: {
-      id: 'cs201',
-      name: 'Data Structures',
-      code: 'CS201',
-      notesCount: 15,
-      branch: 'cse'
-    },
-    branch: 'cse'
-  },
-  {
-    id: '2',
-    title: 'Thermodynamics: Laws and Applications',
-    description: 'Detailed notes on thermodynamic laws, cycles, and their engineering applications with solved examples.',
-    uploadDate: '2023-06-22',
-    uploaderName: 'Prof. Patel',
-    rating: 4.5,
-    downloads: 980,
-    likes: 215,
-    comments: 32,
-    fileType: 'PDF',
-    fileSize: '3.8 MB',
-    subject: {
-      id: 'me201',
-      name: 'Thermodynamics',
-      code: 'ME201',
-      notesCount: 12,
-      branch: 'mechanical'
-    },
-    branch: 'mechanical'
-  },
-  {
-    id: '3',
-    title: 'Circuit Theory Fundamentals',
-    description: 'Covers basic to advanced circuit analysis techniques, network theorems, and transient analysis.',
-    uploadDate: '2023-04-10',
-    uploaderName: 'Dr. Gupta',
-    rating: 4.7,
-    downloads: 1050,
-    likes: 287,
-    comments: 38,
-    fileType: 'PDF',
-    fileSize: '5.1 MB',
-    subject: {
-      id: 'ee201',
-      name: 'Circuit Theory',
-      code: 'EE201',
-      notesCount: 12,
-      branch: 'electrical'
-    },
-    branch: 'electrical'
-  },
-  {
-    id: '4',
-    title: 'Database Systems Concepts and Design',
-    description: 'Complete notes on database design, normalization, SQL, and transaction management with practical examples.',
-    uploadDate: '2023-07-05',
-    uploaderName: 'Prof. Khan',
-    rating: 4.6,
-    downloads: 1120,
-    likes: 298,
-    comments: 42,
-    fileType: 'PPT',
-    fileSize: '6.3 MB',
-    subject: {
-      id: 'it301',
-      name: 'Database Systems',
-      code: 'IT301',
-      notesCount: 12,
-      branch: 'it'
-    },
-    branch: 'it'
-  },
-  {
-    id: '5',
-    title: 'Structural Analysis Techniques',
-    description: 'Comprehensive notes on various structural analysis methods including force method, displacement method, and matrix methods.',
-    uploadDate: '2023-03-18',
-    uploaderName: 'Dr. Verma',
-    rating: 4.4,
-    downloads: 890,
-    likes: 186,
-    comments: 29,
-    fileType: 'PDF',
-    fileSize: '4.5 MB',
-    subject: {
-      id: 'ce301',
-      name: 'Structural Analysis',
-      code: 'CE301',
-      notesCount: 10,
-      branch: 'civil'
-    },
-    branch: 'civil'
-  },
-  {
-    id: '6',
-    title: 'Operating Systems Architecture',
-    description: 'Detailed notes on OS concepts, process management, memory management, file systems, and security.',
-    uploadDate: '2023-08-12',
-    uploaderName: 'Prof. Reddy',
-    rating: 4.9,
-    downloads: 1450,
-    likes: 378,
-    comments: 52,
-    fileType: 'DOC',
-    fileSize: '3.2 MB',
-    subject: {
-      id: 'cs301',
-      name: 'Operating Systems',
-      code: 'CS301',
-      notesCount: 14,
-      branch: 'cse'
-    },
-    branch: 'cse'
-  }
-];
+import NoteCard from '@/components/NoteCard';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { UserPlus, LogIn } from 'lucide-react';
 
 const Home = () => {
   const [selectedBranch, setSelectedBranch] = useState<Branch>(null);
@@ -142,6 +20,10 @@ const Home = () => {
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
   
   const handleSelectBranch = (branch: Branch) => {
     setSelectedBranch(branch);
@@ -155,13 +37,25 @@ const Home = () => {
     setFilteredNotes([]);
   };
   
-  const handleSelectSubject = (subject: Subject) => {
+  const handleSelectSubject = async (subject: Subject) => {
+    setIsLoading(true);
     setSelectedSubject(subject);
-    // Filter notes for the selected subject
-    const notes = sampleNotes.filter(
-      note => note.subject.id === subject.id
-    );
-    setFilteredNotes(notes);
+    
+    try {
+      // Fetch notes for the selected subject from the database
+      const notes = await notesService.getNotesBySubject(subject.id);
+      setFilteredNotes(notes);
+    } catch (error) {
+      console.error('Error fetching notes:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load notes for this subject',
+        variant: 'destructive',
+      });
+      setFilteredNotes([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   const handleSearch = (query: string) => {
@@ -170,70 +64,82 @@ const Home = () => {
     
     if (!query.trim()) {
       // If search is cleared, show all notes for the selected subject
-      const notes = sampleNotes.filter(
-        note => note.subject.id === selectedSubject.id
-      );
-      setFilteredNotes(notes);
+      notesService.getNotesBySubject(selectedSubject.id)
+        .then(notes => setFilteredNotes(notes))
+        .catch(error => {
+          console.error('Error fetching notes:', error);
+          setFilteredNotes([]);
+        });
       return;
     }
     
-    // Filter notes based on search query
-    const notes = sampleNotes.filter(
-      note => 
-        note.subject.id === selectedSubject.id &&
-        (note.title.toLowerCase().includes(query.toLowerCase()) ||
-         note.description.toLowerCase().includes(query.toLowerCase()) ||
-         note.uploaderName.toLowerCase().includes(query.toLowerCase()))
-    );
-    setFilteredNotes(notes);
+    // Filter notes based on search query (client-side filtering)
+    notesService.getNotesBySubject(selectedSubject.id)
+      .then(notes => {
+        const filtered = notes.filter(
+          note => 
+            note.title.toLowerCase().includes(query.toLowerCase()) ||
+            note.description.toLowerCase().includes(query.toLowerCase()) ||
+            note.uploader_email?.toLowerCase().includes(query.toLowerCase())
+        );
+        setFilteredNotes(filtered);
+      })
+      .catch(error => {
+        console.error('Error filtering notes:', error);
+        setFilteredNotes([]);
+      });
   };
   
   const handleFilter = (criteria: string, value: string) => {
     if (!selectedSubject) return;
     
-    // Get the base notes for the selected subject
-    let notes = sampleNotes.filter(
-      note => note.subject.id === selectedSubject.id
-    );
-    
-    // Apply search query if it exists
-    if (searchQuery.trim()) {
-      notes = notes.filter(
-        note => 
-          note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          note.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          note.uploaderName.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-    
-    // Apply additional filtering based on criteria
-    if (criteria === 'sort') {
-      if (value === 'recent') {
-        notes.sort((a, b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime());
-      } else if (value === 'rating') {
-        notes.sort((a, b) => b.rating - a.rating);
-      } else if (value === 'downloads') {
-        notes.sort((a, b) => b.downloads - a.downloads);
-      }
-    } else if (criteria === 'fileType') {
-      if (value !== 'all') {
-        notes = notes.filter(note => 
-          note.fileType.toLowerCase() === value.toLowerCase() ||
-          (value === 'doc' && (note.fileType.toLowerCase() === 'doc' || note.fileType.toLowerCase() === 'docx')) ||
-          (value === 'ppt' && (note.fileType.toLowerCase() === 'ppt' || note.fileType.toLowerCase() === 'pptx'))
-        );
-      }
-    } else if (criteria === 'rating') {
-      if (value === '4+') {
-        notes = notes.filter(note => note.rating >= 4);
-      } else if (value === '3+') {
-        notes = notes.filter(note => note.rating >= 3);
-      } else if (value === '2+') {
-        notes = notes.filter(note => note.rating >= 2);
-      }
-    }
-    
-    setFilteredNotes(notes);
+    // Get all notes for the selected subject 
+    notesService.getNotesBySubject(selectedSubject.id)
+      .then(notes => {
+        // Apply search query if it exists
+        let filtered = notes;
+        if (searchQuery.trim()) {
+          filtered = notes.filter(
+            note => 
+              note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              note.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              note.uploader_email?.toLowerCase().includes(searchQuery.toLowerCase())
+          );
+        }
+        
+        // Apply additional filtering based on criteria
+        if (criteria === 'sort') {
+          if (value === 'recent') {
+            filtered.sort((a, b) => new Date(b.upload_date).getTime() - new Date(a.upload_date).getTime());
+          } else if (value === 'rating') {
+            filtered.sort((a, b) => (b.avg_rating || 0) - (a.avg_rating || 0));
+          } else if (value === 'downloads') {
+            filtered.sort((a, b) => b.downloads - a.downloads);
+          }
+        } else if (criteria === 'fileType') {
+          if (value !== 'all') {
+            filtered = filtered.filter(note => 
+              note.file_type.toLowerCase() === value.toLowerCase() ||
+              (value === 'doc' && (note.file_type.toLowerCase() === 'doc' || note.file_type.toLowerCase() === 'docx')) ||
+              (value === 'ppt' && (note.file_type.toLowerCase() === 'ppt' || note.file_type.toLowerCase() === 'pptx'))
+            );
+          }
+        } else if (criteria === 'rating') {
+          if (value === '4+') {
+            filtered = filtered.filter(note => (note.avg_rating || 0) >= 4);
+          } else if (value === '3+') {
+            filtered = filtered.filter(note => (note.avg_rating || 0) >= 3);
+          } else if (value === '2+') {
+            filtered = filtered.filter(note => (note.avg_rating || 0) >= 2);
+          }
+        }
+        
+        setFilteredNotes(filtered);
+      })
+      .catch(error => {
+        console.error('Error filtering notes:', error);
+        setFilteredNotes([]);
+      });
   };
   
   return (
@@ -248,6 +154,19 @@ const Home = () => {
               <p className="text-gray-600 mb-6">
                 Access quality study resources and share your notes with fellow engineering students
               </p>
+              
+              {!user && (
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6">
+                  <Button onClick={() => navigate('/auth')} className="flex items-center gap-2 w-full sm:w-auto">
+                    <UserPlus size={16} />
+                    <span>Sign Up</span>
+                  </Button>
+                  <Button variant="outline" onClick={() => navigate('/auth?tab=login')} className="flex items-center gap-2 w-full sm:w-auto">
+                    <LogIn size={16} />
+                    <span>Log In</span>
+                  </Button>
+                </div>
+              )}
             </div>
             
             <BranchSelector 
@@ -281,7 +200,7 @@ const Home = () => {
                 </span>
               </h1>
               <p className="text-gray-600">
-                {selectedSubject.notesCount} notes available
+                Browse available notes for this subject
               </p>
             </div>
             
@@ -291,7 +210,11 @@ const Home = () => {
               onFilter={handleFilter}
             />
             
-            {filteredNotes.length > 0 ? (
+            {isLoading ? (
+              <div className="text-center py-12">
+                <p className="text-gray-600 text-lg">Loading notes...</p>
+              </div>
+            ) : filteredNotes.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredNotes.map(note => (
                   <NoteCard key={note.id} note={note} />
@@ -301,6 +224,13 @@ const Home = () => {
               <div className="text-center py-12">
                 <p className="text-gray-600 text-lg">No notes found for this subject.</p>
                 <p className="text-gray-500 mt-2">Be the first to upload study materials!</p>
+                {user ? (
+                  <UploadNote subject={selectedSubject} />
+                ) : (
+                  <Button onClick={() => navigate('/auth')} className="mt-4">
+                    Sign in to Upload Notes
+                  </Button>
+                )}
               </div>
             )}
           </>
