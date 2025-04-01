@@ -192,7 +192,7 @@ export const commentsService = {
       if (error) throw error;
       
       // Transform data to include user email
-      return data.map(comment => ({
+      return data.map((comment: any) => ({
         ...comment,
         user_email: comment.users?.email
       })) || [];
