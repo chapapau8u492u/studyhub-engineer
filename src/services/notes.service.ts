@@ -4,68 +4,23 @@ import { Note } from "@/types/supabase";
 
 export const notesService = {
   async getNotesBySubject(subjectId: string): Promise<Note[]> {
-    try {
-      const { data, error } = await supabase
-        .from('note_stats')
-        .select('*')
-        .eq('subject_id', subjectId);
-      
-      if (error) throw error;
-      return data as Note[] || [];
-    } catch (error) {
-      console.error('Error fetching notes:', error);
-      return [];
-    }
+    console.log('Database tables have been reset - getNotesBySubject');
+    return [];
   },
   
   async getNoteById(id: string): Promise<Note | null> {
-    try {
-      const { data, error } = await supabase
-        .from('note_stats')
-        .select('*')
-        .eq('id', id)
-        .single();
-      
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching note:', error);
-        return null;
-      }
-      
-      return data as Note;
-    } catch (error) {
-      console.error('Error fetching note:', error);
-      return null;
-    }
+    console.log('Database tables have been reset - getNoteById');
+    return null;
   },
   
   async uploadNote(note: Omit<Note, 'id' | 'upload_date' | 'downloads'>): Promise<Note | null> {
-    try {
-      const { data, error } = await supabase
-        .from('notes')
-        .insert([note])
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data as Note;
-    } catch (error) {
-      console.error('Error uploading note:', error);
-      throw error;
-    }
+    console.log('Database tables have been reset - uploadNote');
+    console.log('Cannot upload note as database tables do not exist yet');
+    throw new Error('Database tables have been reset. Please set up the database schema first.');
   },
   
   async incrementDownloads(noteId: string): Promise<void> {
-    try {
-      // Directly update the downloads count in the notes table
-      const { error } = await supabase
-        .from('notes')
-        .update({ downloads: supabase.rpc('increment', { value: 1 }) })
-        .eq('id', noteId);
-      
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error incrementing downloads:', error);
-      throw error;
-    }
+    console.log('Database tables have been reset - incrementDownloads');
+    console.log('Cannot increment downloads as database tables do not exist yet');
   }
 };

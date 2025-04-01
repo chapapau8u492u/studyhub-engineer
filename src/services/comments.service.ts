@@ -4,56 +4,18 @@ import { Comment } from "@/types/supabase";
 
 export const commentsService = {
   async getCommentsByNote(noteId: string): Promise<Comment[]> {
-    try {
-      const { data, error } = await supabase
-        .from('comments')
-        .select('*, profiles(*)')
-        .eq('note_id', noteId)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      
-      // Transform data to include user email
-      const commentsWithEmail = data.map((comment: any) => ({
-        ...comment,
-        user_email: comment.profiles?.email
-      }));
-      
-      return commentsWithEmail || [];
-    } catch (error) {
-      console.error('Error fetching comments:', error);
-      return [];
-    }
+    console.log('Database tables have been reset - getCommentsByNote');
+    return [];
   },
   
   async addComment(comment: Omit<Comment, 'id' | 'created_at'>): Promise<Comment | null> {
-    try {
-      const { data, error } = await supabase
-        .from('comments')
-        .insert([comment])
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Error adding comment:', error);
-      throw error;
-    }
+    console.log('Database tables have been reset - addComment');
+    console.log('Cannot add comment as database tables do not exist yet');
+    throw new Error('Database tables have been reset. Please set up the database schema first.');
   },
   
   async deleteComment(commentId: string, userId: string): Promise<void> {
-    try {
-      const { error } = await supabase
-        .from('comments')
-        .delete()
-        .eq('id', commentId)
-        .eq('user_id', userId);
-      
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error deleting comment:', error);
-      throw error;
-    }
+    console.log('Database tables have been reset - deleteComment');
+    console.log('Cannot delete comment as database tables do not exist yet');
   }
 };
