@@ -57,7 +57,7 @@ export const notesService = {
   async incrementDownloads(noteId: string): Promise<void> {
     try {
       const { error } = await supabase
-        .rpc('increment_note_downloads', { note_id: noteId });
+        .rpc('increment_note_downloads', { note_id: noteId } as any);
       
       if (error) throw error;
     } catch (error) {
