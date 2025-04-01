@@ -18,6 +18,10 @@ export interface Note {
   likes_count?: number;
   comments_count?: number;
   avg_rating?: number;
+  subject_name?: string;
+  subject_code?: string;
+  branch?: Branch;
+  year?: Year;
 }
 
 export interface Subject {

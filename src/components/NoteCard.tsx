@@ -30,6 +30,8 @@ const getFileIcon = (fileType: string) => {
 };
 
 const getNoteCardBorderColor = (branch: string | undefined) => {
+  if (!branch) return '';
+  
   switch (branch) {
     case 'mechanical':
       return 'border-orange-500';

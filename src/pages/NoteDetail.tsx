@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -34,11 +33,9 @@ const NoteDetail = () => {
         const noteData = await notesService.getNoteById(id);
         setNote(noteData);
         
-        // Load comments
         const commentsData = await commentsService.getCommentsByNote(id);
         setComments(commentsData);
         
-        // Check if user is authenticated for rating and like status
         if (user) {
           const ratingData = await ratingsService.getUserRating(id, user.id);
           if (ratingData) {
@@ -68,18 +65,12 @@ const NoteDetail = () => {
     if (!note) return;
     
     try {
-      // Increment download count
       await notesService.incrementDownloads(note.id);
-      
-      // Open file URL in new tab
       window.open(note.file_url, '_blank');
-      
-      // Update local state to reflect download
       setNote({
         ...note,
         downloads: note.downloads + 1,
       });
-      
     } catch (error) {
       console.error("Error downloading note:", error);
       toast({
@@ -110,7 +101,6 @@ const NoteDetail = () => {
       
       setUserRating(rating);
       
-      // Refetch note to get updated average rating
       const updatedNote = await notesService.getNoteById(note.id);
       setNote(updatedNote);
       
@@ -144,7 +134,6 @@ const NoteDetail = () => {
       const newLikeStatus = await likesService.toggleLike(note.id, user.id);
       setIsLiked(newLikeStatus);
       
-      // Update local like count
       setNote({
         ...note,
         likes_count: (note.likes_count || 0) + (newLikeStatus ? 1 : -1),
@@ -189,17 +178,14 @@ const NoteDetail = () => {
         content: newComment.trim(),
       });
       
-      // Add user email to the new comment
       const commentWithEmail = {
         ...comment,
         user_email: user.email,
       };
       
-      // Add to comments list
       setComments([commentWithEmail, ...comments]);
       setNewComment("");
       
-      // Update comment count in note
       setNote({
         ...note,
         comments_count: (note.comments_count || 0) + 1,
@@ -266,7 +252,7 @@ const NoteDetail = () => {
                   <div>
                     <CardTitle className="text-2xl">{note.title}</CardTitle>
                     <CardDescription className="text-sm mt-2">
-                      {note.subject_name} ({note.subject_code})
+                      {note.subject_name || note.subject?.name} ({note.subject_code || note.subject?.code})
                     </CardDescription>
                   </div>
                   

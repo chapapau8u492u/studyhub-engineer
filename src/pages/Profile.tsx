@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -32,8 +31,7 @@ const Profile = () => {
         const { data, error } = await supabase
           .from('note_stats')
           .select('*')
-          .eq('uploader_id', user.id)
-          .order('upload_date', { ascending: false });
+          .eq('uploader_id', user.id);
 
         if (error) throw error;
         

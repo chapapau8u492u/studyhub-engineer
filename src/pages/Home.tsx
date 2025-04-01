@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -10,6 +9,7 @@ import BranchSelector from '@/components/BranchSelector';
 import SubjectList from '@/components/SubjectList';
 import SearchAndFilter from '@/components/SearchAndFilter';
 import NoteCard from '@/components/NoteCard';
+import UploadNote from '@/components/UploadNote';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { UserPlus, LogIn } from 'lucide-react';
