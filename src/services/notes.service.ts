@@ -56,11 +56,11 @@ export const notesService = {
   
   async incrementDownloads(noteId: string): Promise<void> {
     try {
-      // Use a type casting to tell TypeScript this is the correct structure
-      const { error } = await supabase.rpc(
-        'increment_note_downloads', 
-        { note_id: noteId } as unknown as Record<string, unknown>
-      );
+      // Directly update the downloads count in the notes table
+      const { error } = await supabase
+        .from('notes')
+        .update({ downloads: supabase.rpc('increment', { value: 1 }) })
+        .eq('id', noteId);
       
       if (error) throw error;
     } catch (error) {
