@@ -20,16 +20,16 @@ export interface Note {
   avg_rating?: number;
   subject_name?: string;
   subject_code?: string;
-  branch?: Branch;
-  year?: Year;
+  branch?: Branch | string; // Modified to accept string
+  year?: Year | string;    // Modified to accept string
 }
 
 export interface Subject {
   id: string;
   name: string;
   code: string;
-  branch: Branch;
-  year: Year;
+  branch: Branch | string; // Modified to accept string
+  year: Year | string;    // Modified to accept string
   notesCount?: number;
 }
 

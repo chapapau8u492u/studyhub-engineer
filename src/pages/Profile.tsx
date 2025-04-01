@@ -35,7 +35,7 @@ const Profile = () => {
 
         if (error) throw error;
         
-        setUserNotes(data || []);
+        setUserNotes(data as Note[] || []);
       } catch (error: any) {
         console.error('Error fetching user notes:', error);
         toast({

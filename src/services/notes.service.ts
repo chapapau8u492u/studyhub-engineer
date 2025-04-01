@@ -11,7 +11,7 @@ export const notesService = {
         .eq('subject_id', subjectId);
       
       if (error) throw error;
-      return data || [];
+      return data as Note[] || [];
     } catch (error) {
       console.error('Error fetching notes:', error);
       return [];
@@ -31,7 +31,7 @@ export const notesService = {
         return null;
       }
       
-      return data;
+      return data as Note;
     } catch (error) {
       console.error('Error fetching note:', error);
       return null;
@@ -47,7 +47,7 @@ export const notesService = {
         .single();
       
       if (error) throw error;
-      return data;
+      return data as Note;
     } catch (error) {
       console.error('Error uploading note:', error);
       throw error;

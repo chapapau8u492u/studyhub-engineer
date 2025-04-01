@@ -12,7 +12,7 @@ export const subjectsService = {
         .eq('year', year);
       
       if (error) throw error;
-      return data || [];
+      return data as Subject[] || [];
     } catch (error) {
       console.error('Error fetching subjects:', error);
       return [];
@@ -32,7 +32,7 @@ export const subjectsService = {
         return null;
       }
       
-      return data;
+      return data as Subject;
     } catch (error) {
       console.error('Error fetching subject:', error);
       return null;
