@@ -9,7 +9,137 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      chunked_files: {
+        Row: {
+          created_at: string | null
+          file_name: string
+          id: string
+          is_processed: boolean | null
+          reassembled_url: string | null
+          total_chunks: number
+          updated_at: string | null
+          upload_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          file_name: string
+          id?: string
+          is_processed?: boolean | null
+          reassembled_url?: string | null
+          total_chunks: number
+          updated_at?: string | null
+          upload_id: string
+        }
+        Update: {
+          created_at?: string | null
+          file_name?: string
+          id?: string
+          is_processed?: boolean | null
+          reassembled_url?: string | null
+          total_chunks?: number
+          updated_at?: string | null
+          upload_id?: string
+        }
+        Relationships: []
+      }
+      notes: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          file_name: string
+          file_size: string
+          file_type: string
+          file_url: string
+          id: string
+          is_chunked: boolean | null
+          title: string
+          total_chunks: number | null
+          updated_at: string | null
+          uploader_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          file_name: string
+          file_size: string
+          file_type: string
+          file_url: string
+          id?: string
+          is_chunked?: boolean | null
+          title: string
+          total_chunks?: number | null
+          updated_at?: string | null
+          uploader_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          file_name?: string
+          file_size?: string
+          file_type?: string
+          file_url?: string
+          id?: string
+          is_chunked?: boolean | null
+          title?: string
+          total_chunks?: number | null
+          updated_at?: string | null
+          uploader_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      ratings: {
+        Row: {
+          created_at: string | null
+          id: string
+          note_id: string
+          rating: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          note_id: string
+          rating: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          note_id?: string
+          rating?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ratings_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

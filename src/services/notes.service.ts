@@ -1,26 +1,53 @@
 
-import { supabase, Tables } from "@/integrations/supabase/client";
-import { Note } from "@/types/supabase";
+import { mongodb } from "@/integrations/mongodb/client";
+import { Note } from "@/types/mongodb";
 
 export const notesService = {
   async getNotesBySubject(subjectId: string): Promise<Note[]> {
-    console.log('Database tables have been reset - getNotesBySubject');
-    return [];
+    try {
+      const notes = await mongodb.find("notes", { subject_id: subjectId });
+      return notes as Note[];
+    } catch (error) {
+      console.error("Error getting notes by subject:", error);
+      return [];
+    }
   },
   
   async getNoteById(id: string): Promise<Note | null> {
-    console.log('Database tables have been reset - getNoteById');
-    return null;
+    try {
+      const note = await mongodb.findOne("notes", { _id: id });
+      return note as Note | null;
+    } catch (error) {
+      console.error("Error getting note by id:", error);
+      return null;
+    }
   },
   
-  async uploadNote(note: Omit<Note, 'id' | 'upload_date' | 'downloads'>): Promise<Note | null> {
-    console.log('Database tables have been reset - uploadNote');
-    console.log('Cannot upload note as database tables do not exist yet');
-    throw new Error('Database tables have been reset. Please set up the database schema first.');
+  async uploadNote(note: Omit<Note, '_id' | 'upload_date' | 'downloads'>): Promise<Note | null> {
+    try {
+      const newNote = {
+        ...note,
+        upload_date: new Date().toISOString(),
+        downloads: 0
+      };
+      
+      const result = await mongodb.insertOne("notes", newNote);
+      return result as Note;
+    } catch (error) {
+      console.error("Error uploading note:", error);
+      throw new Error("Failed to upload note. Please try again.");
+    }
   },
   
   async incrementDownloads(noteId: string): Promise<void> {
-    console.log('Database tables have been reset - incrementDownloads');
-    console.log('Cannot increment downloads as database tables do not exist yet');
+    try {
+      await mongodb.updateOne(
+        "notes",
+        { _id: noteId },
+        { $inc: { downloads: 1 } }
+      );
+    } catch (error) {
+      console.error("Error incrementing downloads:", error);
+    }
   }
 };
