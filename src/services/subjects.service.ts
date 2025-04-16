@@ -7,7 +7,7 @@ export const subjectsService = {
   async getSubjectsByBranchAndYear(branch: string, year: string) {
     try {
       const subjects = await mongodb.find("subjects", { branch, year });
-      return (subjects as Subject[]).map(adaptMongoSubjectToSupaSubject);
+      return subjects.map(subject => adaptMongoSubjectToSupaSubject(subject as Subject));
     } catch (error) {
       console.error("Error getting subjects:", error);
       return [];

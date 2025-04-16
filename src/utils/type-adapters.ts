@@ -7,7 +7,9 @@ import * as SupaTypes from '@/types/supabase';
  * for use with existing UI components
  */
 
-export function adaptMongoNoteToSupaNote(mongoNote: MongoTypes.Note): SupaTypes.Note {
+export function adaptMongoNoteToSupaNote(mongoNote: MongoTypes.Note | any): SupaTypes.Note {
+  if (!mongoNote) return null;
+  
   return {
     id: mongoNote._id.toString(),
     title: mongoNote.title,
@@ -31,7 +33,9 @@ export function adaptMongoNoteToSupaNote(mongoNote: MongoTypes.Note): SupaTypes.
   };
 }
 
-export function adaptMongoSubjectToSupaSubject(mongoSubject: MongoTypes.Subject): SupaTypes.Subject {
+export function adaptMongoSubjectToSupaSubject(mongoSubject: MongoTypes.Subject | any): SupaTypes.Subject {
+  if (!mongoSubject) return null;
+  
   return {
     id: mongoSubject._id.toString(),
     name: mongoSubject.name,
@@ -42,7 +46,9 @@ export function adaptMongoSubjectToSupaSubject(mongoSubject: MongoTypes.Subject)
   };
 }
 
-export function adaptMongoCommentToSupaComment(mongoComment: MongoTypes.Comment): SupaTypes.Comment {
+export function adaptMongoCommentToSupaComment(mongoComment: MongoTypes.Comment | any): SupaTypes.Comment {
+  if (!mongoComment) return null;
+  
   return {
     id: mongoComment._id.toString(),
     note_id: mongoComment.note_id,
@@ -53,7 +59,9 @@ export function adaptMongoCommentToSupaComment(mongoComment: MongoTypes.Comment)
   };
 }
 
-export function adaptMongoRatingToSupaRating(mongoRating: MongoTypes.Rating): SupaTypes.Rating {
+export function adaptMongoRatingToSupaRating(mongoRating: MongoTypes.Rating | any): SupaTypes.Rating {
+  if (!mongoRating) return null;
+  
   return {
     id: mongoRating._id.toString(),
     note_id: mongoRating.note_id,
@@ -63,7 +71,9 @@ export function adaptMongoRatingToSupaRating(mongoRating: MongoTypes.Rating): Su
   };
 }
 
-export function adaptMongoLikeToSupaLike(mongoLike: MongoTypes.Like): SupaTypes.Like {
+export function adaptMongoLikeToSupaLike(mongoLike: MongoTypes.Like | any): SupaTypes.Like {
+  if (!mongoLike) return null;
+  
   return {
     id: mongoLike._id.toString(),
     note_id: mongoLike.note_id,

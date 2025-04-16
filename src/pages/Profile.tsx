@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -12,7 +13,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { User, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 
 const Profile = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -104,7 +105,7 @@ const Profile = () => {
                     </div>
                   ) : userNotes.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {userNotes.map(note => (
+                      {userNotes.map((note) => (
                         <NoteCard key={note._id} note={adaptMongoNoteToSupaNote(note)} />
                       ))}
                     </div>

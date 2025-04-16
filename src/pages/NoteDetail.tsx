@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -31,21 +32,22 @@ const NoteDetail = () => {
     const fetchNoteDetails = async () => {
       try {
         const noteData = await notesService.getNoteById(id);
-        setNote(noteData);
+        if (noteData) {
+          setNote(noteData);
         
-        const commentsData = await commentsService.getCommentsByNote(id);
-        setComments(commentsData);
+          const commentsData = await commentsService.getCommentsByNote(id);
+          setComments(commentsData);
         
-        if (user) {
-          const ratingData = await ratingsService.getUserRating(id, user.id);
-          if (ratingData) {
-            setUserRating(ratingData.rating);
-          }
+          if (user) {
+            const ratingData = await ratingsService.getUserRating(id, user.id);
+            if (ratingData) {
+              setUserRating(ratingData.rating);
+            }
           
-          const likeStatus = await likesService.checkIfLiked(id, user.id);
-          setIsLiked(likeStatus);
+            const likeStatus = await likesService.checkIfLiked(id, user.id);
+            setIsLiked(likeStatus);
+          }
         }
-        
       } catch (error) {
         console.error("Error fetching note details:", error);
         toast({
@@ -102,7 +104,9 @@ const NoteDetail = () => {
       setUserRating(rating);
       
       const updatedNote = await notesService.getNoteById(note.id);
-      setNote(updatedNote);
+      if (updatedNote) {
+        setNote(updatedNote);
+      }
       
       toast({
         title: "Rating submitted",
@@ -178,18 +182,20 @@ const NoteDetail = () => {
         content: newComment.trim(),
       });
       
-      const commentWithEmail = {
-        ...comment,
-        user_email: user.email,
-      };
-      
-      setComments([commentWithEmail, ...comments]);
-      setNewComment("");
-      
-      setNote({
-        ...note,
-        comments_count: (note.comments_count || 0) + 1,
-      });
+      if (comment) {
+        const commentWithEmail = {
+          ...comment,
+          user_email: user.email,
+        };
+        
+        setComments([commentWithEmail, ...comments]);
+        setNewComment("");
+        
+        setNote({
+          ...note,
+          comments_count: (note.comments_count || 0) + 1,
+        });
+      }
       
     } catch (error) {
       console.error("Error adding comment:", error);
@@ -244,164 +250,175 @@ const NoteDetail = () => {
           <span>Back</span>
         </Button>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2">
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-2xl">{note.title}</CardTitle>
-                    <CardDescription className="text-sm mt-2">
-                      {note.subject_name || note.subject?.name} ({note.subject_code || note.subject?.code})
-                    </CardDescription>
-                  </div>
-                  
-                  <Button
-                    onClick={handleLike}
-                    variant={isLiked ? "default" : "outline"}
-                    size="sm"
-                    className="flex items-center gap-1"
-                  >
-                    <Heart size={16} className={isLiked ? "fill-white" : ""} />
-                    <span>{note.likes_count || 0}</span>
-                  </Button>
-                </div>
-              </CardHeader>
-              
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500">Description</h3>
-                    <p className="mt-1">{note.description}</p>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <p className="text-gray-500">Loading note details...</p>
+          </div>
+        ) : !note ? (
+          <div className="flex justify-center items-center h-64 flex-col gap-4">
+            <p className="text-gray-500">Note not found</p>
+            <Button onClick={() => navigate(-1)}>Go Back</Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-2">
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500">File Information</h3>
-                      <div className="mt-1 space-y-1">
-                        <p className="text-sm">Type: {note.file_type}</p>
-                        <p className="text-sm">Size: {note.file_size}</p>
-                        <p className="text-sm">Downloads: {note.downloads}</p>
-                      </div>
+                      <CardTitle className="text-2xl">{note.title}</CardTitle>
+                      <CardDescription className="text-sm mt-2">
+                        {note.subject_name || note.subject?.name} ({note.subject_code || note.subject?.code})
+                      </CardDescription>
                     </div>
                     
+                    <Button
+                      onClick={handleLike}
+                      variant={isLiked ? "default" : "outline"}
+                      size="sm"
+                      className="flex items-center gap-1"
+                    >
+                      <Heart size={16} className={isLiked ? "fill-white" : ""} />
+                      <span>{note.likes_count || 0}</span>
+                    </Button>
+                  </div>
+                </CardHeader>
+                
+                <CardContent>
+                  <div className="space-y-4">
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500">Additional Information</h3>
-                      <div className="mt-1 space-y-1 flex flex-col">
-                        <div className="flex items-center gap-1 text-sm">
-                          <User size={14} />
-                          <span>Uploaded by: {note.uploader_email?.split('@')[0]}</span>
+                      <h3 className="text-sm font-medium text-gray-500">Description</h3>
+                      <p className="mt-1">{note.description}</p>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">File Information</h3>
+                        <div className="mt-1 space-y-1">
+                          <p className="text-sm">Type: {note.file_type}</p>
+                          <p className="text-sm">Size: {note.file_size}</p>
+                          <p className="text-sm">Downloads: {note.downloads}</p>
                         </div>
-                        <div className="flex items-center gap-1 text-sm">
-                          <Calendar size={14} />
-                          <span>Upload date: {new Date(note.upload_date).toLocaleDateString()}</span>
-                        </div>
-                        <div className="flex items-center gap-1 text-sm">
-                          <MessageSquare size={14} />
-                          <span>Comments: {note.comments_count || 0}</span>
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Additional Information</h3>
+                        <div className="mt-1 space-y-1 flex flex-col">
+                          <div className="flex items-center gap-1 text-sm">
+                            <User size={14} />
+                            <span>Uploaded by: {note.uploader_email?.split('@')[0]}</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-sm">
+                            <Calendar size={14} />
+                            <span>Upload date: {new Date(note.upload_date).toLocaleDateString()}</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-sm">
+                            <MessageSquare size={14} />
+                            <span>Comments: {note.comments_count || 0}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-              
-              <CardFooter className="flex justify-between">
-                <div className="flex items-center">
-                  <span className="text-sm mr-2">Rate this note:</span>
-                  <div className="flex">
-                    {[1, 2, 3, 4, 5].map((rating) => (
-                      <button
-                        key={rating}
-                        onClick={() => handleRating(rating)}
-                        className="focus:outline-none"
-                      >
-                        <Star
-                          size={20}
-                          className={`${
-                            rating <= userRating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
-                          }`}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                  <span className="ml-2 text-sm">
-                    ({note.avg_rating ? note.avg_rating.toFixed(1) : '0'}/5)
-                  </span>
-                </div>
+                </CardContent>
                 
-                <Button onClick={handleDownload} className="flex items-center gap-2">
-                  <Download size={16} />
-                  <span>Download</span>
-                </Button>
-              </CardFooter>
-            </Card>
-            
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle className="text-lg">Comments ({comments.length})</CardTitle>
-              </CardHeader>
-              
-              <CardContent>
-                <div className="flex items-center gap-2 mb-4">
-                  <Textarea
-                    placeholder="Add a comment..."
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    disabled={commentLoading}
-                  />
-                  <Button
-                    onClick={handleAddComment}
-                    disabled={!newComment.trim() || commentLoading}
-                    size="sm"
-                    className="mt-1"
-                  >
-                    <Send size={16} />
+                <CardFooter className="flex justify-between">
+                  <div className="flex items-center">
+                    <span className="text-sm mr-2">Rate this note:</span>
+                    <div className="flex">
+                      {[1, 2, 3, 4, 5].map((rating) => (
+                        <button
+                          key={rating}
+                          onClick={() => handleRating(rating)}
+                          className="focus:outline-none"
+                        >
+                          <Star
+                            size={20}
+                            className={`${
+                              rating <= userRating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                            }`}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                    <span className="ml-2 text-sm">
+                      ({note.avg_rating ? note.avg_rating.toFixed(1) : '0'}/5)
+                    </span>
+                  </div>
+                  
+                  <Button onClick={handleDownload} className="flex items-center gap-2">
+                    <Download size={16} />
+                    <span>Download</span>
                   </Button>
-                </div>
-                
-                {comments.length > 0 ? (
-                  <div className="space-y-4">
-                    {comments.map((comment) => (
-                      <div key={comment.id} className="p-3 border rounded-md">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Avatar className="h-6 w-6">
-                            <AvatarFallback>
-                              {comment.user_email?.charAt(0).toUpperCase() || 'U'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-sm font-medium">
-                            {comment.user_email?.split('@')[0]}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {new Date(comment.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <p className="text-sm">{comment.content}</p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-center text-gray-500 py-4">No comments yet. Be the first to comment!</p>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-          
-          <div>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Related Notes</CardTitle>
-              </CardHeader>
+                </CardFooter>
+              </Card>
               
-              <CardContent>
-                <p className="text-center text-gray-500 py-4">
-                  Related notes feature coming soon.
-                </p>
-              </CardContent>
-            </Card>
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle className="text-lg">Comments ({comments.length})</CardTitle>
+                </CardHeader>
+                
+                <CardContent>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Textarea
+                      placeholder="Add a comment..."
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      disabled={commentLoading}
+                    />
+                    <Button
+                      onClick={handleAddComment}
+                      disabled={!newComment.trim() || commentLoading}
+                      size="sm"
+                      className="mt-1"
+                    >
+                      <Send size={16} />
+                    </Button>
+                  </div>
+                  
+                  {comments.length > 0 ? (
+                    <div className="space-y-4">
+                      {comments.map((comment) => (
+                        <div key={comment.id} className="p-3 border rounded-md">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarFallback>
+                                {comment.user_email?.charAt(0).toUpperCase() || 'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="text-sm font-medium">
+                              {comment.user_email?.split('@')[0]}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {new Date(comment.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <p className="text-sm">{comment.content}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-center text-gray-500 py-4">No comments yet. Be the first to comment!</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+            
+            <div>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Related Notes</CardTitle>
+                </CardHeader>
+                
+                <CardContent>
+                  <p className="text-center text-gray-500 py-4">
+                    Related notes feature coming soon.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   );

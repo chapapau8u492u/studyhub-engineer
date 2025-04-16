@@ -11,7 +11,7 @@ export const commentsService = {
         { note_id: noteId },
         { sort: { created_at: -1 } }
       );
-      return (comments as Comment[]).map(adaptMongoCommentToSupaComment);
+      return comments.map(comment => adaptMongoCommentToSupaComment(comment as Comment));
     } catch (error) {
       console.error("Error getting comments:", error);
       return [];

@@ -7,7 +7,7 @@ export const notesService = {
   async getNotesBySubject(subjectId: string) {
     try {
       const notes = await mongodb.find("notes", { subject_id: subjectId });
-      return (notes as Note[]).map(adaptMongoNoteToSupaNote);
+      return notes.map(note => adaptMongoNoteToSupaNote(note as Note));
     } catch (error) {
       console.error("Error getting notes by subject:", error);
       return [];

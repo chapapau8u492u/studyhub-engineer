@@ -7,7 +7,7 @@ export const ratingsService = {
   async getRatingsByNote(noteId: string) {
     try {
       const ratings = await mongodb.find("ratings", { note_id: noteId });
-      return (ratings as Rating[]).map(adaptMongoRatingToSupaRating);
+      return ratings.map(rating => adaptMongoRatingToSupaRating(rating as Rating));
     } catch (error) {
       console.error("Error getting ratings:", error);
       return [];
@@ -36,10 +36,13 @@ export const ratingsService = {
           { _id: existingRating._id },
           { rating: rating.rating }
         );
-        return adaptMongoRatingToSupaRating({
+        
+        const updatedRating = {
           ...existingRating,
           rating: rating.rating
-        } as Rating);
+        };
+        
+        return adaptMongoRatingToSupaRating(updatedRating as Rating);
       } else {
         // Create new rating
         const newRating = {
