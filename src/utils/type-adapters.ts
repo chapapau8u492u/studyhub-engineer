@@ -9,7 +9,7 @@ import * as SupaTypes from '@/types/supabase';
 
 export function adaptMongoNoteToSupaNote(mongoNote: MongoTypes.Note): SupaTypes.Note {
   return {
-    id: mongoNote._id,
+    id: mongoNote._id.toString(),
     title: mongoNote.title,
     description: mongoNote.description,
     file_url: mongoNote.file_url,
@@ -33,7 +33,7 @@ export function adaptMongoNoteToSupaNote(mongoNote: MongoTypes.Note): SupaTypes.
 
 export function adaptMongoSubjectToSupaSubject(mongoSubject: MongoTypes.Subject): SupaTypes.Subject {
   return {
-    id: mongoSubject._id,
+    id: mongoSubject._id.toString(),
     name: mongoSubject.name,
     code: mongoSubject.code,
     branch: mongoSubject.branch,
@@ -44,7 +44,7 @@ export function adaptMongoSubjectToSupaSubject(mongoSubject: MongoTypes.Subject)
 
 export function adaptMongoCommentToSupaComment(mongoComment: MongoTypes.Comment): SupaTypes.Comment {
   return {
-    id: mongoComment._id,
+    id: mongoComment._id.toString(),
     note_id: mongoComment.note_id,
     user_id: mongoComment.user_id,
     content: mongoComment.content,
@@ -55,7 +55,7 @@ export function adaptMongoCommentToSupaComment(mongoComment: MongoTypes.Comment)
 
 export function adaptMongoRatingToSupaRating(mongoRating: MongoTypes.Rating): SupaTypes.Rating {
   return {
-    id: mongoRating._id,
+    id: mongoRating._id.toString(),
     note_id: mongoRating.note_id,
     user_id: mongoRating.user_id,
     rating: mongoRating.rating,
@@ -65,7 +65,7 @@ export function adaptMongoRatingToSupaRating(mongoRating: MongoTypes.Rating): Su
 
 export function adaptMongoLikeToSupaLike(mongoLike: MongoTypes.Like): SupaTypes.Like {
   return {
-    id: mongoLike._id,
+    id: mongoLike._id.toString(),
     note_id: mongoLike.note_id,
     user_id: mongoLike.user_id,
     created_at: mongoLike.created_at,

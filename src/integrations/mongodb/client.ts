@@ -1,95 +1,94 @@
 
-import axios from "axios";
+import { MongoClient, ObjectId } from "mongodb";
 
-// MongoDB Atlas Data API configuration
-// This is a placeholder API key that should be replaced with your own
-const DATA_API_URL = "https://data.mongodb-api.com/app/data-api/endpoint/data/v1";
-const DATA_API_KEY = "your-mongodb-atlas-data-api-key"; // Replace with your API key
-const DATA_SOURCE = "Cluster0"; // Your Atlas cluster name
+// MongoDB connection string
+const MONGODB_URI = "mongodb+srv://trylaptop2024:<db_password>@notes-app.cmibw.mongodb.net/?retryWrites=true&w=majority&appName=Notes-App";
+// Replace <db_password> with your actual password in the code
 const DATABASE = "notes_app"; // Your database name
 
-const client = axios.create({
-  baseURL: DATA_API_URL,
-  headers: {
-    "Content-Type": "application/json",
-    "api-key": DATA_API_KEY,
-  },
-});
+// Create MongoDB client
+const client = new MongoClient(MONGODB_URI.replace("<db_password>", "your_actual_password_here"));
+
+// Connect to MongoDB
+let clientPromise: Promise<MongoClient>;
+try {
+  clientPromise = client.connect();
+  console.log("MongoDB connection initialized");
+} catch (error) {
+  console.error("Failed to connect to MongoDB", error);
+  throw error;
+}
 
 export const mongodb = {
   async find(collection: string, filter = {}, options = {}) {
     try {
-      const response = await client.post("/action/find", {
-        dataSource: DATA_SOURCE,
-        database: DATABASE,
-        collection,
-        filter,
-        ...options
-      });
-      return response.data.documents || [];
+      const database = (await clientPromise).db(DATABASE);
+      const result = await database.collection(collection).find(filter, options).toArray();
+      return result;
     } catch (error) {
-      console.error("MongoDB find error:", error);
+      console.error(`MongoDB find error in ${collection}:`, error);
       return [];
     }
   },
 
   async findOne(collection: string, filter = {}) {
     try {
-      const response = await client.post("/action/findOne", {
-        dataSource: DATA_SOURCE,
-        database: DATABASE,
-        collection,
-        filter
-      });
-      return response.data.document || null;
+      // Convert string _id to ObjectId if present
+      if (filter && (filter as any)._id && typeof (filter as any)._id === 'string') {
+        (filter as any)._id = new ObjectId((filter as any)._id);
+      }
+      
+      const database = (await clientPromise).db(DATABASE);
+      const result = await database.collection(collection).findOne(filter);
+      return result;
     } catch (error) {
-      console.error("MongoDB findOne error:", error);
+      console.error(`MongoDB findOne error in ${collection}:`, error);
       return null;
     }
   },
 
   async insertOne(collection: string, document: any) {
     try {
-      const response = await client.post("/action/insertOne", {
-        dataSource: DATA_SOURCE,
-        database: DATABASE,
-        collection,
-        document
-      });
-      return { ...document, _id: response.data.insertedId };
+      const database = (await clientPromise).db(DATABASE);
+      const result = await database.collection(collection).insertOne(document);
+      return { ...document, _id: result.insertedId.toString() };
     } catch (error) {
-      console.error("MongoDB insertOne error:", error);
+      console.error(`MongoDB insertOne error in ${collection}:`, error);
       throw error;
     }
   },
 
   async updateOne(collection: string, filter = {}, update = {}) {
     try {
-      const response = await client.post("/action/updateOne", {
-        dataSource: DATA_SOURCE,
-        database: DATABASE,
-        collection,
-        filter,
-        update: { $set: update }
-      });
-      return response.data;
+      // Convert string _id to ObjectId if present
+      if (filter && (filter as any)._id && typeof (filter as any)._id === 'string') {
+        (filter as any)._id = new ObjectId((filter as any)._id);
+      }
+      
+      const database = (await clientPromise).db(DATABASE);
+      const result = await database.collection(collection).updateOne(
+        filter, 
+        update.hasOwnProperty('$set') ? update : { $set: update }
+      );
+      return result;
     } catch (error) {
-      console.error("MongoDB updateOne error:", error);
+      console.error(`MongoDB updateOne error in ${collection}:`, error);
       throw error;
     }
   },
 
   async deleteOne(collection: string, filter = {}) {
     try {
-      const response = await client.post("/action/deleteOne", {
-        dataSource: DATA_SOURCE,
-        database: DATABASE,
-        collection,
-        filter
-      });
-      return response.data;
+      // Convert string _id to ObjectId if present
+      if (filter && (filter as any)._id && typeof (filter as any)._id === 'string') {
+        (filter as any)._id = new ObjectId((filter as any)._id);
+      }
+      
+      const database = (await clientPromise).db(DATABASE);
+      const result = await database.collection(collection).deleteOne(filter);
+      return result;
     } catch (error) {
-      console.error("MongoDB deleteOne error:", error);
+      console.error(`MongoDB deleteOne error in ${collection}:`, error);
       throw error;
     }
   }
