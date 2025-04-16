@@ -1,29 +1,30 @@
 
 import { mongodb } from "@/integrations/mongodb/client";
 import { Note } from "@/types/mongodb";
+import { adaptMongoNoteToSupaNote } from "@/utils/type-adapters";
 
 export const notesService = {
-  async getNotesBySubject(subjectId: string): Promise<Note[]> {
+  async getNotesBySubject(subjectId: string) {
     try {
       const notes = await mongodb.find("notes", { subject_id: subjectId });
-      return notes as Note[];
+      return (notes as Note[]).map(adaptMongoNoteToSupaNote);
     } catch (error) {
       console.error("Error getting notes by subject:", error);
       return [];
     }
   },
   
-  async getNoteById(id: string): Promise<Note | null> {
+  async getNoteById(id: string) {
     try {
       const note = await mongodb.findOne("notes", { _id: id });
-      return note as Note | null;
+      return note ? adaptMongoNoteToSupaNote(note as Note) : null;
     } catch (error) {
       console.error("Error getting note by id:", error);
       return null;
     }
   },
   
-  async uploadNote(note: Omit<Note, '_id' | 'upload_date' | 'downloads'>): Promise<Note | null> {
+  async uploadNote(note: Omit<Note, '_id' | 'upload_date' | 'downloads'>) {
     try {
       const newNote = {
         ...note,
@@ -32,14 +33,14 @@ export const notesService = {
       };
       
       const result = await mongodb.insertOne("notes", newNote);
-      return result as Note;
+      return adaptMongoNoteToSupaNote(result as Note);
     } catch (error) {
       console.error("Error uploading note:", error);
       throw new Error("Failed to upload note. Please try again.");
     }
   },
   
-  async incrementDownloads(noteId: string): Promise<void> {
+  async incrementDownloads(noteId: string) {
     try {
       await mongodb.updateOne(
         "notes",

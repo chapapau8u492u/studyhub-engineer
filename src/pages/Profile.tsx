@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { Note } from '@/types/supabase';
+import { mongodb } from '@/integrations/mongodb/client';
+import { adaptMongoNoteToSupaNote } from '@/utils/type-adapters';
+import { Note } from '@/types/mongodb';
 import Header from '@/components/Header';
 import NoteCard from '@/components/NoteCard';
 import { Button } from '@/components/ui/button';
@@ -28,14 +29,8 @@ const Profile = () => {
 
     const fetchUserNotes = async () => {
       try {
-        const { data, error } = await supabase
-          .from('note_stats')
-          .select('*')
-          .eq('uploader_id', user.id);
-
-        if (error) throw error;
-        
-        setUserNotes(data as Note[] || []);
+        const notes = await mongodb.find('notes', { uploader_id: user.id });
+        setUserNotes(notes as Note[]);
       } catch (error: any) {
         console.error('Error fetching user notes:', error);
         toast({
@@ -110,7 +105,7 @@ const Profile = () => {
                   ) : userNotes.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {userNotes.map(note => (
-                        <NoteCard key={note.id} note={note} />
+                        <NoteCard key={note._id} note={adaptMongoNoteToSupaNote(note)} />
                       ))}
                     </div>
                   ) : (

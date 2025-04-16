@@ -1,9 +1,10 @@
 
 import { mongodb } from "@/integrations/mongodb/client";
 import { Like } from "@/types/mongodb";
+import { adaptMongoLikeToSupaLike } from "@/utils/type-adapters";
 
 export const likesService = {
-  async toggleLike(noteId: string, userId: string): Promise<boolean> {
+  async toggleLike(noteId: string, userId: string) {
     try {
       // Check if like exists
       const existingLike = await mongodb.findOne("likes", { note_id: noteId, user_id: userId });
@@ -27,7 +28,7 @@ export const likesService = {
     }
   },
   
-  async checkIfLiked(noteId: string, userId: string): Promise<boolean> {
+  async checkIfLiked(noteId: string, userId: string) {
     try {
       const like = await mongodb.findOne("likes", { note_id: noteId, user_id: userId });
       return !!like;

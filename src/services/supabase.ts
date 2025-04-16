@@ -1,5 +1,6 @@
 
-// Export all services from a single file
+// Re-export all MongoDB services with the supabase.ts filename
+// This allows existing imports to work without needing to be updated
 export { subjectsService } from './subjects.service';
 export { notesService } from './notes.service';
 export { ratingsService } from './ratings.service';

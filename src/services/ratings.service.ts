@@ -1,32 +1,33 @@
 
 import { mongodb } from "@/integrations/mongodb/client";
 import { Rating } from "@/types/mongodb";
+import { adaptMongoRatingToSupaRating } from "@/utils/type-adapters";
 
 export const ratingsService = {
-  async getRatingsByNote(noteId: string): Promise<Rating[]> {
+  async getRatingsByNote(noteId: string) {
     try {
       const ratings = await mongodb.find("ratings", { note_id: noteId });
-      return ratings as Rating[];
+      return (ratings as Rating[]).map(adaptMongoRatingToSupaRating);
     } catch (error) {
       console.error("Error getting ratings:", error);
       return [];
     }
   },
   
-  async getUserRating(noteId: string, userId: string): Promise<Rating | null> {
+  async getUserRating(noteId: string, userId: string) {
     try {
       const rating = await mongodb.findOne("ratings", { note_id: noteId, user_id: userId });
-      return rating as Rating | null;
+      return rating ? adaptMongoRatingToSupaRating(rating as Rating) : null;
     } catch (error) {
       console.error("Error getting user rating:", error);
       return null;
     }
   },
   
-  async addOrUpdateRating(rating: Omit<Rating, '_id' | 'created_at'>): Promise<Rating | null> {
+  async addOrUpdateRating(rating: Omit<Rating, '_id' | 'created_at'>) {
     try {
       // Check if rating exists
-      const existingRating = await this.getUserRating(rating.note_id, rating.user_id);
+      const existingRating = await mongodb.findOne("ratings", { note_id: rating.note_id, user_id: rating.user_id });
       
       if (existingRating) {
         // Update existing rating
@@ -35,10 +36,10 @@ export const ratingsService = {
           { _id: existingRating._id },
           { rating: rating.rating }
         );
-        return {
+        return adaptMongoRatingToSupaRating({
           ...existingRating,
           rating: rating.rating
-        };
+        } as Rating);
       } else {
         // Create new rating
         const newRating = {
@@ -47,7 +48,7 @@ export const ratingsService = {
         };
         
         const result = await mongodb.insertOne("ratings", newRating);
-        return result as Rating;
+        return adaptMongoRatingToSupaRating(result as Rating);
       }
     } catch (error) {
       console.error("Error adding/updating rating:", error);

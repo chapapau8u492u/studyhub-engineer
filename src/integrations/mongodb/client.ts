@@ -2,9 +2,9 @@
 import axios from "axios";
 
 // MongoDB Atlas Data API configuration
-// This is a public API key that should be configured for your Atlas cluster's Data API
+// This is a placeholder API key that should be replaced with your own
 const DATA_API_URL = "https://data.mongodb-api.com/app/data-api/endpoint/data/v1";
-const DATA_API_KEY = ""; // You'll need to add your API key here
+const DATA_API_KEY = "your-mongodb-atlas-data-api-key"; // Replace with your API key
 const DATA_SOURCE = "Cluster0"; // Your Atlas cluster name
 const DATABASE = "notes_app"; // Your database name
 
